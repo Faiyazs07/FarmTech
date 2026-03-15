@@ -2,18 +2,20 @@
 
 import { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { useGLTF, Html, Float } from '@react-three/drei';
+import { useGLTF, Html, Float, Instances, Instance } from '@react-three/drei';
 import * as THREE from 'three';
 
 export default function FarmScene({ onZoneClick, farmData }) {
   const groupRef = useRef();
-  
+
   // Refined Interactive Points based on layout
   const zones = [
     { id: 'cow_shed', position: [0, 4, -5], name: 'Automated Cow Shed', description: 'AI-monitored livestock health and automated milking systems.' },
     { id: 'solar_array', position: [0, 8, -5], name: 'Renewable Power', description: 'Solar panels providing 100% clean energy to the shed.' },
-    { id: 'crop_field_a', position: [-40, 4, -20], name: 'Precision Wheat', description: 'Smart-monitored crops with automated irrigation.' },
-    { id: 'crop_field_b', position: [-40, 4, 30], name: 'Sustainability Row', description: 'Experimental nitrogen-fixing crop rotation.' },
+    { id: 'crop_field_a', position: [-40, 4, -40], name: 'Precision Wheat', description: 'Smart-monitored wheat crops with automated irrigation.' },
+    { id: 'crop_field_b', position: [-40, 4, -120], name: 'Vibrant Canola', description: 'Sustainable canola production for renewable bio-oils.' },
+    { id: 'crop_field_c', position: [40, 4, -40], name: 'High-Yield Corn', description: 'Advanced corn hybrids maximizing growth efficiently.' },
+    { id: 'crop_field_d', position: [40, 4, -120], name: 'Soybean Reserve', description: 'Nitrogen-fixing soy crops for sustainable rotation.' },
     { id: 'parking_hub', position: [25, 4, 15], name: 'Operational Hub', description: 'Fleet management and visitor parking.' },
     { id: 'wind_energy', position: [60, 4, -30], name: 'Energy Grid', description: 'Vertical axis turbines for baseline power.' },
     { id: 'water_tower', position: [40, 10, 30], name: 'Water Security', description: 'Recycled water storage for the entire palace.' },
@@ -40,9 +42,13 @@ export default function FarmScene({ onZoneClick, farmData }) {
         <HumanNPC position={[-12, 0, -2]} color="#ef4444" />
       </group>
 
-      {/* 2. CROP SIDE (Left Side) */}
+      {/* 2. CROP SIDE (Left Side: 4 distinct fields with Perimeter) */}
       <group position={[-50, 0, 0]}>
-        <VastFields />
+        <CropPerimeterFence />
+        <CropBlock label="wheat" position={[0, 0, -40]} />
+        <CropBlock label="corn" position={[80, 0, -40]} />
+        <CropBlock label="canola" position={[0, 0, -120]} />
+        <CropBlock label="soy" position={[80, 0, -120]} />
         <MovingTractor position={[0, 0.5, 0]} />
       </group>
 
@@ -164,14 +170,130 @@ function ParkingLot() {
   );
 }
 
-function VastFields() {
+function CropBlock({ position, label }) {
+  const isCanola = label === 'canola';
+  const isCorn = label === 'corn';
+  const isSoy = label === 'soy';
+
+  let headColor = "#eab308"; // wheat
+  if (isCanola) headColor = "#fde047";
+  if (isCorn) headColor = "#fbbf24";
+  if (isSoy) headColor = "#84cc16";
+  
+  const fieldDepth = 70; // Depth of this specific block
+  const stalkCount = 200; // Crops per row
+
+  const stalks = useMemo(() => {
+    return [...Array(stalkCount)].map(() => {
+      const x = (Math.random() - 0.5) * 3; // within 3.5 width
+      const z = (Math.random() - 0.5) * (fieldDepth - 2);
+      let baseHeight = 0.8;
+      if (isCanola) baseHeight = 0.9;
+      if (isCorn) baseHeight = 1.2;
+      
+      const height = baseHeight + Math.random() * 0.6;
+      return { position: [x, height / 2 + 0.1, z], height };
+    });
+  }, [stalkCount, fieldDepth, isCanola, isCorn]);
+
   return (
-    <group>
+    <group position={position}>
       {[...Array(12)].map((_, i) => (
-         <mesh key={i} position={[i * 6 - 30, 0.1, 0]}>
-           <boxGeometry args={[3.5, 0.2, 120]} />
-           <meshStandardMaterial color="#4d7c0f" />
-         </mesh>
+        <group key={i} position={[i * 6 - 30, 0.1, 0]}>
+          {/* Soil Patch */}
+          <mesh position={[0, 0, 0]}>
+            <boxGeometry args={[3.5, 0.2, fieldDepth]} />
+            <meshStandardMaterial color="#3f2b1a" roughness={1} />
+          </mesh>
+
+          {/* Green Stalks */}
+          <Instances range={stalkCount}>
+            <cylinderGeometry args={[0.04, 0.04, 1]} />
+            <meshStandardMaterial color="#4d7c0f" />
+            {stalks.map((data, j) => (
+              <Instance key={`stalk-${j}`} position={data.position} scale={[1, data.height, 1]} />
+            ))}
+          </Instances>
+
+          {/* Crop Heads */}
+          <Instances range={stalkCount}>
+            {isCanola || isSoy ? (
+              <sphereGeometry args={[isSoy ? 0.12 : 0.15, 6, 6]} />
+            ) : isCorn ? (
+              <boxGeometry args={[0.2, 0.6, 0.2]} />
+            ) : (
+              <boxGeometry args={[0.15, 0.4, 0.15]} />
+            )}
+            <meshStandardMaterial color={headColor} />
+            {stalks.map((data, j) => (
+              <Instance key={`head-${j}`} position={[data.position[0], data.position[1] + data.height / 2, data.position[2]]} />
+            ))}
+          </Instances>
+        </group>
+      ))}
+    </group>
+  );
+}
+
+function CropPerimeterFence() {
+  const width = 180;
+  const depth = 170;
+  
+  const fenceColor = "#4a3728";
+  
+  return (
+    <group position={[40, 0, -80]}>
+      {/* Left Wall */}
+      <FenceWall width={depth} x={-width/2} z={0} rotation={[0, Math.PI / 2, 0]} color={fenceColor} />
+      {/* Back Wall */}
+      <FenceWall width={width} x={0} z={-depth/2} rotation={[0, 0, 0]} color={fenceColor} />
+      {/* Front Wall */}
+      <FenceWall width={width} x={0} z={depth/2} rotation={[0, 0, 0]} color={fenceColor} />
+      
+      {/* Right Wall with Gate (Gate is gap in the middle) */}
+      <FenceWall width={(depth - 30) / 2} x={width/2} z={-depth/4 - 7.5} rotation={[0, Math.PI / 2, 0]} color={fenceColor} />
+      <FenceWall width={(depth - 30) / 2} x={width/2} z={depth/4 + 7.5} rotation={[0, Math.PI / 2, 0]} color={fenceColor} />
+
+      {/* Entry Gate Arch */}
+      <group position={[width/2, 0, 0]}>
+        <mesh position={[0, 2.5, -15]}>
+          <boxGeometry args={[0.6, 5, 0.6]} />
+          <meshStandardMaterial color="#2d1b11" />
+        </mesh>
+        <mesh position={[0, 2.5, 15]}>
+          <boxGeometry args={[0.6, 5, 0.6]} />
+          <meshStandardMaterial color="#2d1b11" />
+        </mesh>
+        <mesh position={[0, 5, 0]}>
+          <boxGeometry args={[0.4, 0.8, 30]} />
+          <meshStandardMaterial color="#2d1b11" />
+        </mesh>
+      </group>
+    </group>
+  );
+}
+
+function FenceWall({ width, x, z, rotation, color }) {
+  const posts = Math.floor(width / 10);
+  return (
+    <group position={[x, 0, z]} rotation={rotation}>
+      {/* Top Rail */}
+      <mesh position={[0, 1.8, 0]}>
+        <boxGeometry args={[width, 0.2, 0.1]} />
+        <meshStandardMaterial color={color} />
+      </mesh>
+      {/* Bottom Rail */}
+      <mesh position={[0, 0.8, 0]}>
+        <boxGeometry args={[width, 0.2, 0.1]} />
+        <meshStandardMaterial color={color} />
+      </mesh>
+      
+      {/* Posts */}
+      {[...Array(posts + 1)].map((_, i) => (
+        <mesh key={i} position={[-width/2 + i * (width/posts), 1, 0]}>
+          <boxGeometry args={[0.3, 2, 0.3]} />
+          <meshStandardMaterial color={color} />
+        </mesh>
       ))}
     </group>
   );
@@ -182,11 +304,11 @@ function ForestPerimeter() {
   return (
     <group>
       {[...Array(24)].map((_, i) => (
-        <primitive 
-          key={i} 
-          object={treeScene.clone()} 
-          position={[Math.sin(i * 0.3) * 200, 0, Math.cos(i * 0.3) * 200]} 
-          scale={3 + Math.random() * 3} 
+        <primitive
+          key={i}
+          object={treeScene.clone()}
+          position={[Math.sin(i * 0.3) * 200, 0, Math.cos(i * 0.3) * 200]}
+          scale={3 + Math.random() * 3}
         />
       ))}
     </group>
@@ -224,9 +346,9 @@ function InteractiveHotspot({ zone, onClick }) {
       >
         <div className="absolute inset-0 rounded-full bg-white/20 animate-ping" />
         <div className="w-10 h-10 rounded-full border-2 border-white/50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-           <div className="w-2.5 h-2.5 bg-white rounded-full shadow-[0_0_10px_white]" />
+          <div className="w-2.5 h-2.5 bg-white rounded-full shadow-[0_0_10px_white]" />
         </div>
-        
+
         <div className="absolute top-full mt-3 bg-white/95 px-3 py-1.5 rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-all scale-90 group-hover:scale-100 pointer-events-none">
           <p className="font-bold text-[10px] text-gray-900 uppercase tracking-wider">{zone.name}</p>
         </div>
