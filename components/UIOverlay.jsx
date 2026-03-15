@@ -43,13 +43,6 @@ export default function UIOverlay({ activeZone, farmData, onClose }) {
             {/* Header */}
             <div className="p-8 pb-4 flex justify-between items-center bg-gradient-to-b from-[#2d5a27]/20 to-transparent">
               <div className="text-left">
-                <motion.span 
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="text-[10px] font-bold text-[#8fb339] uppercase tracking-[0.3em]"
-                >
-                  Discovery Point
-                </motion.span>
                 <h2 className="text-4xl font-black text-white uppercase tracking-tighter leading-tight mt-1">{activeZone.name}</h2>
               </div>
               <button 
@@ -65,22 +58,6 @@ export default function UIOverlay({ activeZone, farmData, onClose }) {
               <p className="text-white/70 leading-relaxed mb-10 text-lg font-light italic">
                 "{activeZone.description || 'Welcome to the core of our sustainable operations where technology meets nature to define the future of food.'}"
               </p>
-
-              <div className="space-y-10">
-                <StatGroup title="Current Status">
-                  <DetailBox label="System Health" value="Operational" pulse />
-                  <DetailBox label="Efficiency" value="98.4%" />
-                </StatGroup>
-
-                <StatGroup title="Performance Metrics">
-                  <div className="grid grid-cols-2 gap-6">
-                    <DetailBox label="Temp Control" value={`${farmData.temperature}°C`} />
-                    <DetailBox label="Soil Health" value={`${farmData.soilMoisture}%`} />
-                    <DetailBox label="Energy Load" value="Optimal" />
-                    <DetailBox label="Output" value="Maximized" />
-                  </div>
-                </StatGroup>
-              </div>
 
               <div className="mt-16 space-y-4">
                 <button className="w-full bg-white text-[#0a1a08] font-black py-5 rounded-2xl uppercase tracking-widest text-xs shadow-2xl hover:-translate-y-1 transition-all">
