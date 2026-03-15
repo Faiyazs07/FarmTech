@@ -1,5 +1,6 @@
 "use client";
 
+import Link from 'next/link';
 import { Canvas, useThree, useFrame } from '@react-three/fiber';
 import { OrbitControls, PerspectiveCamera, Environment, Sky } from '@react-three/drei';
 import { Suspense, useState, useEffect, useRef } from 'react';
@@ -55,7 +56,7 @@ export default function FarmExperience() {
   });
 
   return (
-    <main className="w-full h-screen relative bg-[#0a1a08] overflow-hidden">
+    <main className="flex-1 h-screen relative bg-[#0a1a08] overflow-hidden">
       <AnimatePresence>
         {!hasStarted && (
           <motion.div
@@ -66,12 +67,20 @@ export default function FarmExperience() {
              <div className="text-center text-white relative z-10">
               <h1 className="text-8xl font-black uppercase mb-12 tracking-tighter">DOWNS PALACE</h1>
               <p className="text-xs font-bold tracking-[0.6em] uppercase opacity-40 mb-16">Architecting Resilient Agriculture</p>
-              <button 
+              <button
                 onClick={() => setHasStarted(true)}
                 className="px-16 py-6 bg-white text-black font-black uppercase rounded-2xl shadow-[0_30px_60px_rgba(0,0,0,0.5)] hover:scale-110 active:scale-95 transition-all text-sm tracking-widest"
               >
                 Access Estate Grid
               </button>
+              <div className="mt-4">
+                <Link
+                  href="/dashboard"
+                  className="px-10 py-4 border border-white/30 text-white/70 font-black uppercase rounded-2xl hover:border-white/60 hover:text-white active:scale-95 transition-all text-xs tracking-widest inline-block"
+                >
+                  Farm Dashboard
+                </Link>
+              </div>
             </div>
           </motion.div>
         )}

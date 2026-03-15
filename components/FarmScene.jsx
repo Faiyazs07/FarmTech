@@ -10,12 +10,12 @@ export default function FarmScene({ onZoneClick, farmData }) {
 
   // Refined Interactive Points based on layout
   const zones = [
-    { id: 'cow_shed', position: [0, 5, 5], name: 'Automated Cow Shed', description: 'AI-monitored livestock health and automated milking systems.' },
-    { id: 'solar_array', position: [50, 2, 40], name: 'Renewable Power', description: 'Platform-mounted solar arrays providing clean energy.' },
-    { id: 'crop_field_a', position: [-40, 4, -40], name: 'Precision Wheat', description: 'Smart-monitored wheat crops with automated irrigation.' },
-    { id: 'crop_field_b', position: [-40, 4, -120], name: 'Vibrant Canola', description: 'Sustainable canola production for renewable bio-oils.' },
-    { id: 'crop_field_c', position: [40, 4, -40], name: 'Premium Barley', description: 'High-quality barley for brewing and livestock feed.' },
-    { id: 'crop_field_d', position: [40, 4, -120], name: 'Precision Peas', description: 'Nitrogen-fixing sweet peas for healthy soil regeneration.' },
+    { id: 'cow_shed', position: [0, 4, -5], name: 'Automated Cow Shed', description: 'AI-monitored livestock health and automated milking systems.' },
+    { id: 'solar_array', position: [0, 8, -5], name: 'Renewable Power', description: 'Solar panels providing 100% clean energy to the shed.' },
+    { id: 'crop_field_a', position: [-40, 4, -40], name: 'Precision Wheat', description: 'Smart-monitored wheat crops with automated irrigation and precision nutrient delivery.', cropType: 'wheat' },
+    { id: 'crop_field_b', position: [-40, 4, -120], name: 'Vibrant Canola', description: 'Sustainable canola production for renewable bio-oils and premium cold-press markets.', cropType: 'canola' },
+    { id: 'crop_field_c', position: [40, 4, -40], name: 'Heritage Peas', description: 'Heritage pea varieties with high protein content for sustainable nutrition.', cropType: 'peas' },
+    { id: 'crop_field_d', position: [40, 4, -120], name: 'Premium Barley', description: 'Malting-grade barley cultivated for premium distillery and brewery contracts.', cropType: 'barley' },
     { id: 'parking_hub', position: [25, 4, 15], name: 'Operational Hub', description: 'Fleet management and visitor parking.' },
     { id: 'water_tower', position: [40, 10, 30], name: 'Water Security', description: 'Recycled water storage for the entire palace.' },
   ];
@@ -49,34 +49,36 @@ export default function FarmScene({ onZoneClick, farmData }) {
         <CropBlock label="peas" position={[80, 0, -120]} />
         <MovingTractor position={[20, 0.5, -80]} speed={0.15} range={70} delay={0} color="#2d5a27" />
         <MovingTractor position={[60, 0.5, -80]} speed={0.2} range={65} delay={5} color="#b91c1c" />
-      </group>
+      </group >
 
       {/* 3. LOGISTICS SIDE (Right Side) */}
-      <group position={[30, 0, 20]}>
+      < group position={[30, 0, 20]} >
         <ParkingLot />
         <WarehouseGroup scale={1.5} />
         {/* Solar grid relocated to corner of the yellow platform/houses area */}
         <SolarGrid position={[20, 0.5, 20]} scale={0.6} rotation={[0, -Math.PI / 4, 0]} />
-      </group>
+      </group >
 
       {/* 4. ENERGY PARK */}
-      <group position={[70, 0, -40]}>
+      < group position={[70, 0, -40]} >
         <WindmillGroup scale={3.5} />
         <WindmillGroup position={[25, 0, 15]} scale={2.8} />
-      </group>
+      </group >
 
       {/* 5. NATURE PERIMETER */}
-      <ForestPerimeter />
+      < ForestPerimeter />
 
       {/* Pulsing Hotspots */}
-      {zones.map((zone) => (
-        <InteractiveHotspot
-          key={zone.id}
-          zone={zone}
-          onClick={() => onZoneClick(zone)}
-        />
-      ))}
-    </group>
+      {
+        zones.map((zone) => (
+          <InteractiveHotspot
+            key={zone.id}
+            zone={zone}
+            onClick={() => onZoneClick(zone)}
+          />
+        ))
+      }
+    </group >
   );
 }
 
@@ -132,125 +134,246 @@ function MovingAnimal({ position, speed, delay = 0, color }) {
   );
 }
 
-function MovingTractor({ position, speed = 0.2, range = 40, delay = 0, color = "#2d5a27" }) {
-  const ref = useRef();
+function TractorModel({ color = "#cc2200" }) {
   const wheelRef1 = useRef();
   const wheelRef2 = useRef();
   const wheelRef3 = useRef();
   const wheelRef4 = useRef();
 
+  useFrame(() => {
+    const spin = 0.05;
+    if (wheelRef1.current) wheelRef1.current.rotation.x += spin;
+    if (wheelRef2.current) wheelRef2.current.rotation.x += spin;
+    if (wheelRef3.current) wheelRef3.current.rotation.x += spin * 0.8;
+    if (wheelRef4.current) wheelRef4.current.rotation.x += spin * 0.8;
+  });
+
+  const red = color;
+  const darkRed = "#991a00";
+  const black = "#111111";
+  const darkGray = "#2a2a2a";
+  const silver = "#888888";
+  const cabGlass = "#7ec8e3";
+
+  return (
+    <group>
+      {/* === CHASSIS / BODY === */}
+      <mesh position={[0, 1.1, 0.2]} castShadow>
+        <boxGeometry args={[2.2, 1.0, 3.6]} />
+        <meshStandardMaterial color={red} roughness={0.5} metalness={0.3} />
+      </mesh>
+
+      {/* === ENGINE HOOD (front, narrower, raised) === */}
+      <mesh position={[0, 1.5, 1.8]} castShadow>
+        <boxGeometry args={[1.6, 1.0, 2.0]} />
+        <meshStandardMaterial color={red} roughness={0.5} metalness={0.3} />
+      </mesh>
+      {/* Hood top rounded cap */}
+      <mesh position={[0, 2.05, 1.8]}>
+        <boxGeometry args={[1.6, 0.15, 2.0]} />
+        <meshStandardMaterial color={darkRed} roughness={0.4} metalness={0.2} />
+      </mesh>
+
+      {/* === CAB === */}
+      <group position={[0, 0, -1.1]}>
+        {/* Cab floor/base */}
+        <mesh position={[0, 1.7, 0]} castShadow>
+          <boxGeometry args={[2.0, 0.15, 2.0]} />
+          <meshStandardMaterial color={darkRed} />
+        </mesh>
+        {/* Cab roof */}
+        <mesh position={[0, 3.35, 0]}>
+          <boxGeometry args={[2.1, 0.15, 2.1]} />
+          <meshStandardMaterial color={darkRed} />
+        </mesh>
+        {/* Left pillar */}
+        <mesh position={[-0.95, 2.5, 0]}>
+          <boxGeometry args={[0.15, 1.5, 0.15]} />
+          <meshStandardMaterial color={darkRed} />
+        </mesh>
+        {/* Right pillar */}
+        <mesh position={[0.95, 2.5, 0]}>
+          <boxGeometry args={[0.15, 1.5, 0.15]} />
+          <meshStandardMaterial color={darkRed} />
+        </mesh>
+        {/* Front pillar left */}
+        <mesh position={[-0.95, 2.5, -1.0]}>
+          <boxGeometry args={[0.15, 1.5, 0.15]} />
+          <meshStandardMaterial color={darkRed} />
+        </mesh>
+        {/* Front pillar right */}
+        <mesh position={[0.95, 2.5, -1.0]}>
+          <boxGeometry args={[0.15, 1.5, 0.15]} />
+          <meshStandardMaterial color={darkRed} />
+        </mesh>
+        {/* Front windshield glass */}
+        <mesh position={[0, 2.5, -0.9]}>
+          <boxGeometry args={[1.7, 1.2, 0.05]} />
+          <meshStandardMaterial color={cabGlass} transparent opacity={0.4} roughness={0.0} metalness={0.1} />
+        </mesh>
+        {/* Rear glass */}
+        <mesh position={[0, 2.5, 1.0]}>
+          <boxGeometry args={[1.7, 1.2, 0.05]} />
+          <meshStandardMaterial color={cabGlass} transparent opacity={0.4} roughness={0.0} metalness={0.1} />
+        </mesh>
+        {/* Side glass left */}
+        <mesh position={[-0.88, 2.5, -0.0]}>
+          <boxGeometry args={[0.05, 1.2, 1.7]} />
+          <meshStandardMaterial color={cabGlass} transparent opacity={0.4} roughness={0.0} metalness={0.1} />
+        </mesh>
+        {/* Side glass right */}
+        <mesh position={[0.88, 2.5, -0.0]}>
+          <boxGeometry args={[0.05, 1.2, 1.7]} />
+          <meshStandardMaterial color={cabGlass} transparent opacity={0.4} roughness={0.0} metalness={0.1} />
+        </mesh>
+      </group>
+
+      {/* === EXHAUST PIPE === */}
+      <mesh position={[0.6, 2.8, 1.2]} castShadow>
+        <cylinderGeometry args={[0.1, 0.1, 1.2, 8]} />
+        <meshStandardMaterial color={silver} metalness={0.8} roughness={0.3} />
+      </mesh>
+      {/* Exhaust cap */}
+      <mesh position={[0.6, 3.45, 1.2]}>
+        <cylinderGeometry args={[0.15, 0.1, 0.1, 8]} />
+        <meshStandardMaterial color={darkGray} metalness={0.6} />
+      </mesh>
+
+      {/* === REAR LARGE WHEELS === */}
+      {/* Left rear */}
+      <group ref={wheelRef1} position={[-1.35, 0.85, -0.9]}>
+        <mesh rotation={[0, 0, Math.PI / 2]}>
+          <cylinderGeometry args={[0.85, 0.85, 0.5, 16]} />
+          <meshStandardMaterial color={black} roughness={1.0} />
+        </mesh>
+        {/* Rim */}
+        <mesh rotation={[0, 0, Math.PI / 2]}>
+          <cylinderGeometry args={[0.55, 0.55, 0.52, 8]} />
+          <meshStandardMaterial color={silver} metalness={0.7} roughness={0.3} />
+        </mesh>
+        {/* Tread lines */}
+        {[...Array(8)].map((_, i) => (
+          <mesh key={i} rotation={[i * Math.PI / 4, 0, Math.PI / 2]} position={[0, 0, 0]}>
+            <boxGeometry args={[0.08, 1.72, 0.12]} />
+            <meshStandardMaterial color={darkGray} roughness={1.0} />
+          </mesh>
+        ))}
+      </group>
+      {/* Right rear */}
+      <group ref={wheelRef2} position={[1.35, 0.85, -0.9]}>
+        <mesh rotation={[0, 0, Math.PI / 2]}>
+          <cylinderGeometry args={[0.85, 0.85, 0.5, 16]} />
+          <meshStandardMaterial color={black} roughness={1.0} />
+        </mesh>
+        <mesh rotation={[0, 0, Math.PI / 2]}>
+          <cylinderGeometry args={[0.55, 0.55, 0.52, 8]} />
+          <meshStandardMaterial color={silver} metalness={0.7} roughness={0.3} />
+        </mesh>
+        {[...Array(8)].map((_, i) => (
+          <mesh key={i} rotation={[i * Math.PI / 4, 0, Math.PI / 2]}>
+            <boxGeometry args={[0.08, 1.72, 0.12]} />
+            <meshStandardMaterial color={darkGray} roughness={1.0} />
+          </mesh>
+        ))}
+      </group>
+
+      {/* Rear wheel fenders */}
+      <mesh position={[-1.2, 1.9, -0.9]}>
+        <boxGeometry args={[0.2, 0.5, 1.5]} />
+        <meshStandardMaterial color={red} />
+      </mesh>
+      <mesh position={[1.2, 1.9, -0.9]}>
+        <boxGeometry args={[0.2, 0.5, 1.5]} />
+        <meshStandardMaterial color={red} />
+      </mesh>
+
+      {/* === FRONT SMALL WHEELS === */}
+      {/* Left front */}
+      <group ref={wheelRef3} position={[-0.95, 0.45, 2.5]}>
+        <mesh rotation={[0, 0, Math.PI / 2]}>
+          <cylinderGeometry args={[0.45, 0.45, 0.35, 12]} />
+          <meshStandardMaterial color={black} roughness={1.0} />
+        </mesh>
+        <mesh rotation={[0, 0, Math.PI / 2]}>
+          <cylinderGeometry args={[0.28, 0.28, 0.37, 8]} />
+          <meshStandardMaterial color={silver} metalness={0.7} roughness={0.3} />
+        </mesh>
+      </group>
+      {/* Right front */}
+      <group ref={wheelRef4} position={[0.95, 0.45, 2.5]}>
+        <mesh rotation={[0, 0, Math.PI / 2]}>
+          <cylinderGeometry args={[0.45, 0.45, 0.35, 12]} />
+          <meshStandardMaterial color={black} roughness={1.0} />
+        </mesh>
+        <mesh rotation={[0, 0, Math.PI / 2]}>
+          <cylinderGeometry args={[0.28, 0.28, 0.37, 8]} />
+          <meshStandardMaterial color={silver} metalness={0.7} roughness={0.3} />
+        </mesh>
+      </group>
+
+      {/* Axle front */}
+      <mesh position={[0, 0.45, 2.5]} rotation={[0, 0, Math.PI / 2]}>
+        <cylinderGeometry args={[0.1, 0.1, 2.1, 8]} />
+        <meshStandardMaterial color={darkGray} metalness={0.6} />
+      </mesh>
+      {/* Axle rear */}
+      <mesh position={[0, 0.85, -0.9]} rotation={[0, 0, Math.PI / 2]}>
+        <cylinderGeometry args={[0.12, 0.12, 2.9, 8]} />
+        <meshStandardMaterial color={darkGray} metalness={0.6} />
+      </mesh>
+
+      {/* === HITCH at back === */}
+      <mesh position={[0, 0.6, -2.2]}>
+        <boxGeometry args={[0.3, 0.3, 0.4]} />
+        <meshStandardMaterial color={darkGray} metalness={0.8} />
+      </mesh>
+
+      {/* === GRILLE (front face) === */}
+      <mesh position={[0, 1.5, 2.82]}>
+        <boxGeometry args={[1.55, 0.9, 0.05]} />
+        <meshStandardMaterial color={darkGray} metalness={0.5} roughness={0.5} />
+      </mesh>
+      {/* Grille bars */}
+      {[-0.3, 0, 0.3].map((y, i) => (
+        <mesh key={i} position={[0, 1.5 + y, 2.84]}>
+          <boxGeometry args={[1.5, 0.05, 0.04]} />
+          <meshStandardMaterial color={silver} metalness={0.8} />
+        </mesh>
+      ))}
+      {/* Headlights */}
+      <mesh position={[-0.55, 1.75, 2.84]}>
+        <boxGeometry args={[0.3, 0.2, 0.04]} />
+        <meshStandardMaterial color="#ffffcc" emissive="#ffffaa" emissiveIntensity={0.5} />
+      </mesh>
+      <mesh position={[0.55, 1.75, 2.84]}>
+        <boxGeometry args={[0.3, 0.2, 0.04]} />
+        <meshStandardMaterial color="#ffffcc" emissive="#ffffaa" emissiveIntensity={0.5} />
+      </mesh>
+    </group>
+  );
+}
+
+function MovingTractor({ position, speed = 0.2, range = 40, delay = 0, color = "#cc2200" }) {
+  const ref = useRef();
+
   useFrame((state) => {
     const t = state.clock.getElapsedTime() + delay;
     const offset = Math.sin(t * speed) * range;
-    
+
     ref.current.position.z = position[2] + offset;
-    
+
     // Direction and rotation
     const isMovingForward = Math.cos(t * speed) > 0;
     ref.current.rotation.y = isMovingForward ? 0 : Math.PI;
-
-    // Spin wheels
-    const wheelRotation = t * (isMovingForward ? 5 : -5);
-    if (wheelRef1.current) wheelRef1.current.rotation.x = wheelRotation;
-    if (wheelRef2.current) wheelRef2.current.rotation.x = wheelRotation;
-    if (wheelRef3.current) wheelRef3.current.rotation.x = wheelRotation;
-    if (wheelRef4.current) wheelRef4.current.rotation.x = wheelRotation;
   });
 
   return (
     <group ref={ref} position={position}>
-      {/* MAIN CHASSIS */}
-      <mesh position={[0, 0.8, 0]} castShadow>
-        <boxGeometry args={[2, 0.5, 3.5]} />
-        <meshStandardMaterial color={color} />
-      </mesh>
-
-      {/* ENGINE HOOD */}
-      <mesh position={[0, 1.3, 0.8]} castShadow>
-        <boxGeometry args={[1.4, 1, 2]} />
-        <meshStandardMaterial color={color} />
-      </mesh>
-
-      {/* CABIN */}
-      <group position={[0, 2, -0.8]}>
-        {/* Frame */}
-        <mesh castShadow>
-          <boxGeometry args={[1.8, 1.8, 1.6]} />
-          <meshStandardMaterial color="#1a2e1a" />
-        </mesh>
-        {/* Windows */}
-        <mesh position={[0, 0, 0.05]} scale={[1.05, 0.8, 1.05]}>
-          <boxGeometry args={[1.6, 1.6, 1.5]} />
-          <meshStandardMaterial color="#93c5fd" transparent opacity={0.4} />
-        </mesh>
-        {/* Roof */}
-        <mesh position={[0, 0.95, 0]}>
-          <boxGeometry args={[2, 0.2, 1.8]} />
-          <meshStandardMaterial color={color} />
-        </mesh>
-        {/* GPS GADGET */}
-        <mesh position={[0, 1.1, 0]}>
-          <sphereGeometry args={[0.3, 16, 16]} />
-          <meshStandardMaterial color="#fbbf24" />
-        </mesh>
-      </group>
-
-      {/* REAR LARGE TIRES */}
-      <group position={[-1.1, 0.8, -1.2]} ref={wheelRef1} rotation={[0, 0, Math.PI / 2]}>
-        <mesh castShadow>
-          <cylinderGeometry args={[1, 1, 0.6, 12]} />
-          <meshStandardMaterial color="#111111" />
-        </mesh>
-        <mesh position={[0, 0.35, 0]}>
-          <cylinderGeometry args={[0.4, 0.4, 0.1, 8]} />
-          <meshStandardMaterial color="#fbbf24" />
-        </mesh>
-      </group>
-      <group position={[1.1, 0.8, -1.2]} ref={wheelRef2} rotation={[0, 0, Math.PI / 2]}>
-        <mesh castShadow>
-          <cylinderGeometry args={[1, 1, 0.6, 12]} />
-          <meshStandardMaterial color="#111111" />
-        </mesh>
-        <mesh position={[0, -0.35, 0]}>
-          <cylinderGeometry args={[0.4, 0.4, 0.1, 8]} />
-          <meshStandardMaterial color="#fbbf24" />
-        </mesh>
-      </group>
-
-      {/* FRONT SMALL TIRES */}
-      <group position={[-0.8, 0.5, 1.4]} ref={wheelRef3} rotation={[0, 0, Math.PI / 2]}>
-        <mesh castShadow>
-          <cylinderGeometry args={[0.5, 0.5, 0.4, 12]} />
-          <meshStandardMaterial color="#111111" />
-        </mesh>
-      </group>
-      <group position={[0.8, 0.5, 1.4]} ref={wheelRef4} rotation={[0, 0, Math.PI / 2]}>
-        <mesh castShadow>
-          <cylinderGeometry args={[0.5, 0.5, 0.4, 12]} />
-          <meshStandardMaterial color="#111111" />
-        </mesh>
-      </group>
-
-      {/* EXHAUST PIPE (GADGET) */}
-      <mesh position={[0.5, 2.2, 1.2]} castShadow>
-        <cylinderGeometry args={[0.1, 0.1, 2.5]} />
-        <meshStandardMaterial color="#333333" />
-      </mesh>
-      <mesh position={[0.5, 3.4, 1.2]} rotation={[0, 0, Math.PI / 2]}>
-        <cylinderGeometry args={[0.1, 0.1, 0.4]} />
-        <meshStandardMaterial color="#333333" />
-      </mesh>
-
-      {/* HEADLIGHTS */}
-      <mesh position={[-0.5, 1.3, 1.85]}>
-        <sphereGeometry args={[0.15, 8, 8]} />
-        <meshStandardMaterial color="#ffffff" emissive="#ffffff" emissiveIntensity={2} />
-      </mesh>
-      <mesh position={[0.5, 1.3, 1.85]}>
-        <sphereGeometry args={[0.15, 8, 8]} />
-        <meshStandardMaterial color="#ffffff" emissive="#ffffff" emissiveIntensity={2} />
-      </mesh>
+      <TractorModel color={color} />
     </group>
+  );
+}
+    </group >
   );
 }
 
@@ -304,7 +427,7 @@ function CropBlock({ position, label }) {
 
   const stalks = useMemo(() => {
     return [...Array(stalkCount)].map(() => {
-      const x = (Math.random() - 0.5) * 3; // within 3.5 width
+      const x = (Math.random() - 0.5) * 3;
       const z = (Math.random() - 0.5) * (fieldDepth - 2);
       let baseHeight = 0.8;
       if (isCanola) baseHeight = 0.9;
