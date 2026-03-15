@@ -26,7 +26,7 @@ function CameraHandler({ activeZone }: { activeZone: any }) {
       targetLook.current.set(activeZone.position[0], activeZone.position[1], activeZone.position[2]);
     } else {
       // Cinematic overview
-      targetPos.current.set(150, 120, 150);
+      targetPos.current.set(400, 350, 400);
       targetLook.current.set(0, 0, 0);
     }
     isTransitioning.current = true;
@@ -79,7 +79,7 @@ export default function FarmExperience() {
 
       <Canvas
         shadows
-        camera={{ position: [150, 120, 150], fov: 38 }}
+        camera={{ position: [400, 350, 400], fov: 40, far: 10000 }}
         gl={{ alpha: false, antialias: true, powerPreference: "high-performance" }}
       >
         <color attach="background" args={["#1c2e1c"]} />
@@ -106,7 +106,7 @@ export default function FarmExperience() {
         <OrbitControls
           makeDefault
           minDistance={15}
-          maxDistance={500}
+          maxDistance={3000}
           maxPolarAngle={Math.PI / 2.2}
           enableDamping
         />
