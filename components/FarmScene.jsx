@@ -373,9 +373,6 @@ function MovingTractor({ position, speed = 0.2, range = 40, delay = 0, color = "
     </group>
   );
 }
-    </group >
-  );
-}
 
 function HumanNPC({ position, color }) {
   return (
