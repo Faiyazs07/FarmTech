@@ -1,65 +1,124 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { Canvas, useThree, useFrame } from '@react-three/fiber';
+import { OrbitControls, PerspectiveCamera, Environment, Sky } from '@react-three/drei';
+import { Suspense, useState, useEffect, useRef } from 'react';
+import FarmScene from '@/components/FarmScene';
+import UIOverlay from '@/components/UIOverlay';
+import VoiceController from '@/components/VoiceController';
+import { AnimatePresence, motion } from 'framer-motion';
+import * as THREE from 'three';
+
+function CameraHandler({ activeZone }: { activeZone: any }) {
+  const { camera, controls } = useThree() as any;
+  const targetPos = useRef(new THREE.Vector3(150, 120, 150));
+  const targetLook = useRef(new THREE.Vector3(0, 0, 0));
+  const isTransitioning = useRef(false);
+
+  useEffect(() => {
+    if (activeZone) {
+      // Very close zoom for detail areas but angled to see animations
+      targetPos.current.set(
+        activeZone.position[0] + 25,
+        activeZone.position[1] + 20,
+        activeZone.position[2] + 25
+      );
+      targetLook.current.set(activeZone.position[0], activeZone.position[1], activeZone.position[2]);
+    } else {
+      // Cinematic overview
+      targetPos.current.set(150, 120, 150);
+      targetLook.current.set(0, 0, 0);
+    }
+    isTransitioning.current = true;
+  }, [activeZone]);
+
+  useFrame(() => {
+    if (!isTransitioning.current) return;
+    camera.position.lerp(targetPos.current, 0.04);
+    if (controls && controls.target) {
+      controls.target.lerp(targetLook.current, 0.04);
+      controls.update();
+    }
+    if (camera.position.distanceTo(targetPos.current) < 0.2) isTransitioning.current = false;
+  });
+
+  return null;
+}
+
+export default function FarmExperience() {
+  const [activeZone, setActiveZone] = useState<any>(null);
+  const [hasStarted, setHasStarted] = useState(false);
+  const [farmData, setFarmData] = useState({
+    temperature: 24.5,
+    soilMoisture: 72,
+    alerts: [],
+  });
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <main className="w-full h-screen relative bg-[#0a1a08] overflow-hidden">
+      <AnimatePresence>
+        {!hasStarted && (
+          <motion.div
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 z-[100] bg-[#0a1a08] flex items-center justify-center p-8"
+          >
+             <div className="text-center text-white relative z-10">
+              <h1 className="text-8xl font-black uppercase mb-12 tracking-tighter">DOWNS PALACE</h1>
+              <p className="text-xs font-bold tracking-[0.6em] uppercase opacity-40 mb-16">Architecting Resilient Agriculture</p>
+              <button 
+                onClick={() => setHasStarted(true)}
+                className="px-16 py-6 bg-white text-black font-black uppercase rounded-2xl shadow-[0_30px_60px_rgba(0,0,0,0.5)] hover:scale-110 active:scale-95 transition-all text-sm tracking-widest"
+              >
+                Access Estate Grid
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <Canvas
+        shadows
+        camera={{ position: [150, 120, 150], fov: 38 }}
+        gl={{ alpha: false, antialias: true, powerPreference: "high-performance" }}
+      >
+        <color attach="background" args={["#1c2e1c"]} />
+        
+        {/* Bright daylight setup */}
+        <ambientLight intensity={0.9} />
+        <spotLight position={[50, 120, 50]} angle={0.15} penumbra={1} intensity={2} castShadow shadow-mapSize={[2048, 2048]} />
+        <directionalLight 
+          position={[0, 40, 0]} 
+          intensity={0.8} 
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+        
+        <Suspense fallback={null}>
+          <FarmScene 
+            onZoneClick={setActiveZone}
+            farmData={farmData}
+          />
+          <Environment preset="park" />
+          <Sky distance={450000} sunPosition={[1, 0.4, 1]} inclination={0} azimuth={0.25} />
+        </Suspense>
+
+        <CameraHandler activeZone={activeZone} />
+        
+        <OrbitControls
+          makeDefault
+          minDistance={15}
+          maxDistance={500}
+          maxPolarAngle={Math.PI / 2.2}
+          enableDamping
+        />
+      </Canvas>
+
+      <UIOverlay 
+        activeZone={activeZone}
+        farmData={farmData}
+        onClose={() => setActiveZone(null)}
+      />
+
+      <VoiceController onDataUpdate={setFarmData} />
+    </main>
   );
 }
