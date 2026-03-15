@@ -47,7 +47,8 @@ export default function FarmScene({ onZoneClick, farmData }) {
         <CropBlock label="barley" position={[80, 0, -40]} />
         <CropBlock label="canola" position={[0, 0, -120]} />
         <CropBlock label="peas" position={[80, 0, -120]} />
-        <MovingTractor position={[0, 0.5, 0]} />
+        <MovingTractor position={[20, 0.5, -80]} speed={0.15} range={70} delay={0} color="#2d5a27" />
+        <MovingTractor position={[60, 0.5, -80]} speed={0.2} range={65} delay={5} color="#b91c1c" />
       </group>
 
       {/* 3. LOGISTICS SIDE (Right Side) */}
@@ -131,22 +132,123 @@ function MovingAnimal({ position, speed, delay = 0, color }) {
   );
 }
 
-function MovingTractor({ position }) {
+function MovingTractor({ position, speed = 0.2, range = 40, delay = 0, color = "#2d5a27" }) {
   const ref = useRef();
+  const wheelRef1 = useRef();
+  const wheelRef2 = useRef();
+  const wheelRef3 = useRef();
+  const wheelRef4 = useRef();
+
   useFrame((state) => {
-    const t = state.clock.getElapsedTime();
-    ref.current.position.z = position[2] + Math.sin(t * 0.2) * 40;
-    ref.current.rotation.y = Math.cos(t * 0.2) > 0 ? 0 : Math.PI;
+    const t = state.clock.getElapsedTime() + delay;
+    const offset = Math.sin(t * speed) * range;
+    
+    ref.current.position.z = position[2] + offset;
+    
+    // Direction and rotation
+    const isMovingForward = Math.cos(t * speed) > 0;
+    ref.current.rotation.y = isMovingForward ? 0 : Math.PI;
+
+    // Spin wheels
+    const wheelRotation = t * (isMovingForward ? 5 : -5);
+    if (wheelRef1.current) wheelRef1.current.rotation.x = wheelRotation;
+    if (wheelRef2.current) wheelRef2.current.rotation.x = wheelRotation;
+    if (wheelRef3.current) wheelRef3.current.rotation.x = wheelRotation;
+    if (wheelRef4.current) wheelRef4.current.rotation.x = wheelRotation;
   });
+
   return (
     <group ref={ref} position={position}>
-      <mesh castShadow>
-        <boxGeometry args={[2, 2, 4]} />
-        <meshStandardMaterial color="#dc2626" />
+      {/* MAIN CHASSIS */}
+      <mesh position={[0, 0.8, 0]} castShadow>
+        <boxGeometry args={[2, 0.5, 3.5]} />
+        <meshStandardMaterial color={color} />
       </mesh>
-      <mesh position={[0, 1.5, -0.5]}>
-        <boxGeometry args={[1.8, 1.5, 1.5]} />
-        <meshStandardMaterial color="#ef4444" transparent opacity={0.6} />
+
+      {/* ENGINE HOOD */}
+      <mesh position={[0, 1.3, 0.8]} castShadow>
+        <boxGeometry args={[1.4, 1, 2]} />
+        <meshStandardMaterial color={color} />
+      </mesh>
+
+      {/* CABIN */}
+      <group position={[0, 2, -0.8]}>
+        {/* Frame */}
+        <mesh castShadow>
+          <boxGeometry args={[1.8, 1.8, 1.6]} />
+          <meshStandardMaterial color="#1a2e1a" />
+        </mesh>
+        {/* Windows */}
+        <mesh position={[0, 0, 0.05]} scale={[1.05, 0.8, 1.05]}>
+          <boxGeometry args={[1.6, 1.6, 1.5]} />
+          <meshStandardMaterial color="#93c5fd" transparent opacity={0.4} />
+        </mesh>
+        {/* Roof */}
+        <mesh position={[0, 0.95, 0]}>
+          <boxGeometry args={[2, 0.2, 1.8]} />
+          <meshStandardMaterial color={color} />
+        </mesh>
+        {/* GPS GADGET */}
+        <mesh position={[0, 1.1, 0]}>
+          <sphereGeometry args={[0.3, 16, 16]} />
+          <meshStandardMaterial color="#fbbf24" />
+        </mesh>
+      </group>
+
+      {/* REAR LARGE TIRES */}
+      <group position={[-1.1, 0.8, -1.2]} ref={wheelRef1} rotation={[0, 0, Math.PI / 2]}>
+        <mesh castShadow>
+          <cylinderGeometry args={[1, 1, 0.6, 12]} />
+          <meshStandardMaterial color="#111111" />
+        </mesh>
+        <mesh position={[0, 0.35, 0]}>
+          <cylinderGeometry args={[0.4, 0.4, 0.1, 8]} />
+          <meshStandardMaterial color="#fbbf24" />
+        </mesh>
+      </group>
+      <group position={[1.1, 0.8, -1.2]} ref={wheelRef2} rotation={[0, 0, Math.PI / 2]}>
+        <mesh castShadow>
+          <cylinderGeometry args={[1, 1, 0.6, 12]} />
+          <meshStandardMaterial color="#111111" />
+        </mesh>
+        <mesh position={[0, -0.35, 0]}>
+          <cylinderGeometry args={[0.4, 0.4, 0.1, 8]} />
+          <meshStandardMaterial color="#fbbf24" />
+        </mesh>
+      </group>
+
+      {/* FRONT SMALL TIRES */}
+      <group position={[-0.8, 0.5, 1.4]} ref={wheelRef3} rotation={[0, 0, Math.PI / 2]}>
+        <mesh castShadow>
+          <cylinderGeometry args={[0.5, 0.5, 0.4, 12]} />
+          <meshStandardMaterial color="#111111" />
+        </mesh>
+      </group>
+      <group position={[0.8, 0.5, 1.4]} ref={wheelRef4} rotation={[0, 0, Math.PI / 2]}>
+        <mesh castShadow>
+          <cylinderGeometry args={[0.5, 0.5, 0.4, 12]} />
+          <meshStandardMaterial color="#111111" />
+        </mesh>
+      </group>
+
+      {/* EXHAUST PIPE (GADGET) */}
+      <mesh position={[0.5, 2.2, 1.2]} castShadow>
+        <cylinderGeometry args={[0.1, 0.1, 2.5]} />
+        <meshStandardMaterial color="#333333" />
+      </mesh>
+      <mesh position={[0.5, 3.4, 1.2]} rotation={[0, 0, Math.PI / 2]}>
+        <cylinderGeometry args={[0.1, 0.1, 0.4]} />
+        <meshStandardMaterial color="#333333" />
+      </mesh>
+
+      {/* HEADLIGHTS */}
+      <mesh position={[-0.5, 1.3, 1.85]}>
+        <sphereGeometry args={[0.15, 8, 8]} />
+        <meshStandardMaterial color="#ffffff" emissive="#ffffff" emissiveIntensity={2} />
+      </mesh>
+      <mesh position={[0.5, 1.3, 1.85]}>
+        <sphereGeometry args={[0.15, 8, 8]} />
+        <meshStandardMaterial color="#ffffff" emissive="#ffffff" emissiveIntensity={2} />
       </mesh>
     </group>
   );
@@ -171,8 +273,8 @@ function ParkingLot() {
   return (
     <group>
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, 0]}>
-        <planeGeometry args={[120, 100]} />
-        <meshStandardMaterial color="#4b5563" roughness={0.8} />
+        <planeGeometry args={[40, 30]} />
+        <meshStandardMaterial color="#334155" />
       </mesh>
       {/* Cars */}
       <mesh position={[-10, 0.5, -5]} castShadow>
@@ -192,7 +294,7 @@ function CropBlock({ position, label }) {
   const isBarley = label === 'barley';
   const isPeas = label === 'peas';
 
-  let headColor = "#eab308"; // wheat
+  let headColor = "#02fe30ff"; // wheat
   if (isCanola) headColor = "#fde047";
   if (isBarley) headColor = "#fcd34d"; // lighter gold for barley
   if (isPeas) headColor = "#22c55e"; // bright green for peas
@@ -353,20 +455,6 @@ function BarnModel(props) {
 
 function WarehouseGroup(props) {
   const { scene } = useGLTF('/models/area1.glb');
-  
-  // Update any yellow parts of the model to grey concrete
-  useMemo(() => {
-    scene.traverse((child) => {
-      if (child.isMesh && child.material) {
-        // If it looks yellow or is named like a platform
-        const color = child.material.color;
-        if ((color.r > 0.6 && color.g > 0.6 && color.b < 0.4) || child.name.toLowerCase().includes('platform')) {
-          child.material.color.set("#4b5563");
-        }
-      }
-    });
-  }, [scene]);
-
   return <primitive object={scene.clone()} {...props} />;
 }
 
