@@ -33,13 +33,16 @@ export default function FarmScene({ onZoneClick, farmData }) {
       {/* 1. CENTRAL INFRASTRUCTURE (Cow Shed & Solar) */}
       <group position={[0, -1.8, -5]}>
         <BarnModel scale={4} rotation={[0, Math.PI, 0]} />
-        {/* Solar grid moved to platform area */}
-        {/* Walking Cows */}
+        {/* Walking Cows - More of them in the shed area */}
         <MovingAnimal position={[-10, 0, 5]} speed={0.02} color="#f5f5f5" />
         <MovingAnimal position={[12, 0, -5]} speed={0.015} delay={2} color="#4a3219" />
+        <StandingAnimal position={[5, 0, 8]} color="#2c1a0c" rotation={Math.PI / 4} />
+        <StandingAnimal position={[-15, 0, -8]} color="#f5f5f5" rotation={-Math.PI / 3} />
+        <MovingAnimal position={[0, 0, 15]} speed={0.01} delay={4} color="#4a3219" />
+        
         {/* Humans around the shed */}
-        <HumanNPC position={[15, 0, 8]} color="#3b82f6" />
-        <HumanNPC position={[-12, 0, -2]} color="#ef4444" />
+        <HumanNPC position={[15, 0, 12]} color="#3b82f6" />
+        <HumanNPC position={[-18, 0, -6]} color="#ef4444" />
       </group>
 
       {/* 2. CROP SIDE (Left Side: 4 distinct fields with Perimeter) */}
@@ -73,6 +76,37 @@ export default function FarmScene({ onZoneClick, farmData }) {
       {/* 6. NEW SECTIONS (Residential & Animals side-by-side) */}
       <group position={[-150, -1.8, -80]}>
         <ResidentialQuarter />
+      </group>
+
+      {/* 7. SCATTERED ANIMALS (Filling the estate space) */}
+      <group position={[-50, -1.8, -60]}>
+         {/* Near Central Gate Area (Left side of estate) */}
+         <group position={[-200, 0, 0]}>
+            <StandingAnimal position={[10, 0, 10]} color="#4a3219" type="horse" rotation={Math.PI / 4} scale={1.4} />
+            <MovingAnimal position={[20, 0, -10]} speed={0.012} color="#3d2b1f" type="horse" scale={1.4} />
+            <StandingAnimal position={[-10, 0, 20]} color="#f5f5f5" type="cow" rotation={-Math.PI / 2} />
+            <MovingAnimal position={[0, 0, -25]} speed={0.008} color="#4a3219" type="cow" />
+         </group>
+
+         {/* Near Residential Area */}
+         <group position={[-100, 0, 50]}>
+            <StandingAnimal position={[0, 0, 0]} color="#3d2b1f" type="horse" scale={1.4} rotation={Math.PI} />
+            <MovingAnimal position={[30, 0, 20]} speed={0.015} color="#ffffff" type="sheep" scale={0.8} />
+            <MovingAnimal position={[35, 0, 25]} speed={0.01} color="#ffffff" type="sheep" scale={0.75} />
+         </group>
+
+         {/* Random Grazing Cows scattered around the estate fields */}
+         <group position={[150, 0, 80]}>
+            <StandingAnimal position={[0, 0, 0]} color="#2c1a0c" type="cow" rotation={Math.PI / 3} />
+            <MovingAnimal position={[-40, 0, -20]} speed={0.005} color="#f5f5f5" type="cow" />
+            <StandingAnimal position={[20, 0, -30]} color="#4a3219" type="cow" rotation={-Math.PI / 6} />
+         </group>
+
+         {/* Near the Hub Gate area (even if closed, to fill space) */}
+         <group position={[200, 0, -50]}>
+            <StandingAnimal position={[0, 0, 0]} color="#3d2b1f" type="horse" scale={1.4} />
+            <MovingAnimal position={[-15, 0, 20]} speed={0.01} color="#4a3219" type="horse" scale={1.4} />
+         </group>
       </group>
 
       <SmallFencedCropBlock position={[-20, -1.8, 65]} label="barley" />
@@ -136,6 +170,22 @@ function MovingAnimal({ position, speed, delay = 0, color, scale = 1, type = 'co
   });
   return (
     <group ref={ref} position={position} scale={scale}>
+      <AnimalModel color={color} type={type} />
+    </group>
+  );
+}
+
+function StandingAnimal({ position, color, scale = 1, type = 'cow', rotation = 0 }) {
+  return (
+    <group position={position} scale={scale} rotation={[0, rotation, 0]}>
+      <AnimalModel color={color} type={type} />
+    </group>
+  );
+}
+
+function AnimalModel({ color, type }) {
+  return (
+    <group>
       {/* Body */}
       <mesh castShadow position={[0, 0.4, 0]}>
         <boxGeometry args={[1.2, 0.8, 2]} />
