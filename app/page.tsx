@@ -7,6 +7,10 @@ import { Suspense, useState, useEffect, useRef } from 'react';
 import FarmScene from '@/components/FarmScene';
 import UIOverlay from '@/components/UIOverlay';
 import VoiceController from '@/components/VoiceController';
+import PlanningDashboard from '@/components/PlanningDashboard';
+import InsightsDashboard from '@/components/InsightsDashboard';
+import CalendarDashboard from '@/components/CalendarDashboard';
+import ConnectorsDashboard from '@/components/ConnectorsDashboard';
 import { AnimatePresence, motion } from 'framer-motion';
 import * as THREE from 'three';
 
@@ -49,6 +53,8 @@ function CameraHandler({ activeZone }: { activeZone: any }) {
 export default function FarmExperience() {
   const [activeZone, setActiveZone] = useState<any>(null);
   const [hasStarted, setHasStarted] = useState(false);
+  const [activePage, setActivePage] = useState('home');
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [farmData, setFarmData] = useState({
     temperature: 24.5,
     soilMoisture: 72,
@@ -64,8 +70,8 @@ export default function FarmExperience() {
             exit={{ opacity: 0 }}
             className="absolute inset-0 z-[100] bg-[#0a1a08] flex items-center justify-center p-8"
           >
-             <div className="text-center text-white relative z-10">
-              <h1 className="text-8xl font-black uppercase mb-12 tracking-tighter">DOWNS PALACE</h1>
+            <div className="text-center text-white relative z-10">
+              <h1 className="text-8xl font-black uppercase mb-12 tracking-tighter">FarmTech</h1>
               <p className="text-xs font-bold tracking-[0.6em] uppercase opacity-40 mb-16">Architecting Resilient Agriculture</p>
               <button
                 onClick={() => setHasStarted(true)}
@@ -92,26 +98,28 @@ export default function FarmExperience() {
         gl={{ alpha: false, antialias: true, powerPreference: "high-performance" }}
       >
         <color attach="background" args={["#1c2e1c"]} />
-        
+
         {/* Bright daylight setup */}
         <ambientLight intensity={0.9} />
         <spotLight position={[50, 120, 50]} angle={0.15} penumbra={1} intensity={2} castShadow shadow-mapSize={[2048, 2048]} />
-        <directionalLight 
-          position={[0, 40, 0]} 
-          intensity={0.8} 
+        <directionalLight
+          position={[0, 40, 0]}
+          intensity={0.8}
         />
-        
+
         <Suspense fallback={null}>
-          <FarmScene 
+          <FarmScene
             onZoneClick={setActiveZone}
             farmData={farmData}
+            activePage={activePage}
+            isMenuOpen={isMenuOpen}
           />
           <Environment preset="park" />
           <Sky distance={450000} sunPosition={[1, 0.4, 1]} inclination={0} azimuth={0.25} />
         </Suspense>
 
         <CameraHandler activeZone={activeZone} />
-        
+
         <OrbitControls
           makeDefault
           minDistance={15}
@@ -121,10 +129,33 @@ export default function FarmExperience() {
         />
       </Canvas>
 
-      <UIOverlay 
+      <UIOverlay
         activeZone={activeZone}
         farmData={farmData}
         onClose={() => setActiveZone(null)}
+        activePage={activePage}
+        setActivePage={setActivePage}
+        isMenuOpen={isMenuOpen}
+        setIsMenuOpen={setIsMenuOpen}
+      />
+
+      <PlanningDashboard
+        isActive={activePage === 'plan'}
+        onClose={() => setActivePage('home')}
+      />
+
+      <InsightsDashboard
+        isActive={activePage === 'analysis'}
+      />
+
+      <CalendarDashboard
+        isActive={activePage === 'calendar'}
+        onClose={() => setActivePage('home')}
+      />
+
+      <ConnectorsDashboard
+        isActive={activePage === 'connectors'}
+        onClose={() => setActivePage('home')}
       />
 
       <VoiceController onDataUpdate={setFarmData} />

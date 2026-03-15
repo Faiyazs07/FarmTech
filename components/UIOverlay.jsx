@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, TrendingUp, TrendingDown, AlertTriangle, CheckCircle, Zap } from 'lucide-react';
+import { X, Menu, TrendingUp, TrendingDown, AlertTriangle, CheckCircle, Zap } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import {
   CROP_DATA,
@@ -16,7 +16,7 @@ const SoilChain = dynamic(() => import('./SoilChain'), { ssr: false });
 const YieldHistoryChart = dynamic(() => import('./YieldHistoryChart'), { ssr: false });
 const BuyersPanel = dynamic(() => import('./BuyersPanel'), { ssr: false });
 
-export default function UIOverlay({ activeZone, farmData, onClose }) {
+export default function UIOverlay({ activeZone, farmData, onClose, activePage, setActivePage, isMenuOpen, setIsMenuOpen }) {
   const cropData = activeZone?.cropType ? CROP_DATA[activeZone.cropType] : null;
 
   return (
@@ -29,7 +29,7 @@ export default function UIOverlay({ activeZone, farmData, onClose }) {
           </div>
         </div>
         <div className="text-white drop-shadow-xl text-left">
-          <p className="font-black text-2xl leading-none uppercase tracking-tighter">DOWNS PALACE</p>
+          <p className="font-black text-2xl leading-none uppercase tracking-tighter">FarmTech</p>
           <p className="text-[9px] font-bold tracking-[0.4em] opacity-60 uppercase">Future of Agriculture</p>
         </div>
       </div>
@@ -37,6 +37,16 @@ export default function UIOverlay({ activeZone, farmData, onClose }) {
       {/* Weather Widget */}
       <div className="pointer-events-auto">
         <WeatherWidget />
+      </div>
+
+      {/* Hamburger Menu - Top Right */}
+      <div className="pointer-events-auto absolute top-6 right-6 flex items-center gap-4">
+        <button
+          onClick={() => setIsMenuOpen(true)}
+          className="bg-white/10 backdrop-blur-xl border border-white/20 p-4 rounded-full shadow-2xl hover:scale-110 active:scale-95 transition-all group"
+        >
+          <Menu className="w-6 h-6 text-white" />
+        </button>
       </div>
 
       {/* Sidebar */}
@@ -98,11 +108,50 @@ export default function UIOverlay({ activeZone, farmData, onClose }) {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Main Navigation Menu */}
+      <AnimatePresence>
+        {isMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="pointer-events-auto absolute inset-0 bg-[#0a1a08]/98 backdrop-blur-3xl z-[100] flex flex-col items-center justify-center p-8"
+          >
+            <button
+              onClick={() => setIsMenuOpen(false)}
+              className="absolute top-8 right-8 p-4 bg-white/5 hover:bg-white/10 rounded-full transition-all"
+            >
+              <X className="w-8 h-8 text-white" />
+            </button>
+
+            <nav className="flex flex-col items-center gap-12">
+              <MenuLink label="Home" active={activePage === 'home'} onClick={() => { setActivePage('home'); setIsMenuOpen(false); }} />
+              <MenuLink label="Plan" active={activePage === 'plan'} onClick={() => { setActivePage('plan'); setIsMenuOpen(false); }} />
+              <MenuLink label="Analysis" active={activePage === 'analysis'} onClick={() => { setActivePage('analysis'); setIsMenuOpen(false); }} />
+              <MenuLink label="Calendar" active={activePage === 'calendar'} onClick={() => { setActivePage('calendar'); setIsMenuOpen(false); }} />
+              <MenuLink label="Connectors" active={activePage === 'connectors'} onClick={() => { setActivePage('connectors'); setIsMenuOpen(false); }} />
+            </nav>
+
+            <div className="mt-24 text-center">
+              <p className="text-white/20 text-[10px] font-black uppercase tracking-[1em]">FarmTech &copy; 2026</p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
 
-// ── Tabbed Crop Panel ─────────────────────────────────────────────────────────
+// ── Components ─────────────────────────────────────────────────────────────
+
+function MenuLink({ label, active, onClick }) {
+  return (
+    <button onClick={onClick} className={`text-5xl font-black uppercase tracking-tighter transition-all hover:scale-105 active:scale-95 ${active ? 'text-white' : 'text-white/30 hover:text-white'}`}>
+      {label}
+    </button>
+  );
+}
 
 function TabbedCropPanel({ cropData, cropType }) {
   const [activeTab, setActiveTab] = useState('current');
@@ -145,8 +194,8 @@ function TabbedCropPanel({ cropData, cropType }) {
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${activeTab === tab.id
-                ? 'bg-[#2d5a27] text-white'
-                : 'text-white/30 hover:text-white/60'
+              ? 'bg-[#2d5a27] text-white'
+              : 'text-white/30 hover:text-white/60'
               }`}
           >
             {tab.label}
@@ -178,8 +227,6 @@ function TabbedCropPanel({ cropData, cropType }) {
     </div>
   );
 }
-
-// ── Current tab content ───────────────────────────────────────────────────────
 
 function CropPanel({ cropData, moisture, nitrate, effectivePrice }) {
   const { metrics, yield: yieldData, trend, forecast, recommendation, urgency } = cropData;
@@ -348,8 +395,6 @@ function CropPanel({ cropData, moisture, nitrate, effectivePrice }) {
     </div>
   );
 }
-
-// ── Generic panel ─────────────────────────────────────────────────────────────
 
 function GenericPanel({ farmData }) {
   return (

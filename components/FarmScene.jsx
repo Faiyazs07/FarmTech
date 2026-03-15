@@ -5,7 +5,7 @@ import { useFrame } from '@react-three/fiber';
 import { useGLTF, Html, Float, Instances, Instance } from '@react-three/drei';
 import * as THREE from 'three';
 
-export default function FarmScene({ onZoneClick, farmData }) {
+export default function FarmScene({ onZoneClick, farmData, activePage = 'home', isMenuOpen }) {
   const groupRef = useRef();
 
   // Refined Interactive Points based on layout
@@ -114,16 +114,14 @@ export default function FarmScene({ onZoneClick, farmData }) {
       <MasterEstateFence />
 
       {/* Pulsing Hotspots */}
-      {
-        zones.map((zone) => (
-          <InteractiveHotspot
-            key={zone.id}
-            zone={zone}
-            onClick={() => onZoneClick(zone)}
-          />
-        ))
-      }
-    </group >
+      {activePage === 'home' && !isMenuOpen && zones.map((zone) => (
+        <InteractiveHotspot
+          key={zone.id}
+          zone={zone}
+          onClick={() => onZoneClick(zone)}
+        />
+      ))}
+    </group>
   );
 }
 
