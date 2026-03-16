@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { Activity, Tractor, Droplets, Leaf, Settings, BellRing, ChevronRight, CheckCircle2, AlertOctagon } from 'lucide-react';
+import { Activity, Tractor, Droplets, Leaf, Settings, BellRing, ChevronRight, CheckCircle2, AlertOctagon, X } from 'lucide-react';
 
-export default function InsightsDashboard({ isActive }) {
+export default function InsightsDashboard({ isActive, onClose }) {
     return (
         <AnimatePresence>
             {isActive && (
@@ -18,6 +18,12 @@ export default function InsightsDashboard({ isActive }) {
                             <p className="text-[10px] font-bold text-[#38bdf8] uppercase tracking-[0.4em] mb-2">Live Analytics</p>
                             <h1 className="text-6xl font-black uppercase tracking-tighter leading-none">Estate Insights</h1>
                         </div>
+                        <button
+                            onClick={onClose}
+                            className="p-4 bg-white/5 hover:bg-white/10 rounded-full text-white/50 transition-all group border border-white/10 mb-2"
+                        >
+                            <X className="w-8 h-8 group-hover:rotate-90 transition-transform" />
+                        </button>
 
                         {/* Main Score UI */}
                         <motion.div

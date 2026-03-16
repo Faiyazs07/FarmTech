@@ -146,6 +146,7 @@ export default function FarmExperience() {
 
       <InsightsDashboard
         isActive={activePage === 'analysis'}
+        onClose={() => setActivePage('home')}
       />
 
       <CalendarDashboard

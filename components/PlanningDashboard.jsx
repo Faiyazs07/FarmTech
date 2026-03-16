@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, TrendingUp, CloudRain, AlertTriangle, Leaf, Package, Thermometer, ShieldAlert, ArrowRight, Mic, Send } from 'lucide-react';
+import { Calendar, TrendingUp, CloudRain, AlertTriangle, Leaf, Package, Thermometer, ShieldAlert, ArrowRight, Mic, Send, X } from 'lucide-react';
 import { useState } from 'react';
 
 export default function PlanningDashboard({ isActive, onClose }) {
@@ -24,19 +24,27 @@ export default function PlanningDashboard({ isActive, onClose }) {
                             <h1 className="text-6xl font-black uppercase tracking-tighter leading-none">Estate Planning</h1>
                         </div>
 
-                        <div className="flex bg-[#1c2e1c]/50 p-2 rounded-2xl border border-white/5 backdrop-blur-md">
-                            {months.map(month => (
-                                <button
-                                    key={month}
-                                    onClick={() => setSelectedMonth(month)}
-                                    className={`px-6 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${selectedMonth === month
-                                        ? 'bg-white text-black shadow-lg scale-105'
-                                        : 'text-white/40 hover:text-white hover:bg-white/5'
-                                        }`}
-                                >
-                                    {month}
-                                </button>
-                            ))}
+                        <div className="flex items-center gap-4">
+                            <div className="flex bg-[#1c2e1c]/50 p-2 rounded-2xl border border-white/5 backdrop-blur-md">
+                                {months.map(month => (
+                                    <button
+                                        key={month}
+                                        onClick={() => setSelectedMonth(month)}
+                                        className={`px-6 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${selectedMonth === month
+                                            ? 'bg-white text-black shadow-lg scale-105'
+                                            : 'text-white/40 hover:text-white hover:bg-white/5'
+                                            }`}
+                                    >
+                                        {month}
+                                    </button>
+                                ))}
+                            </div>
+                            <button
+                                onClick={onClose}
+                                className="p-4 bg-white/5 hover:bg-white/10 rounded-full text-white/50 transition-all group border border-white/10"
+                            >
+                                <X className="w-8 h-8 group-hover:rotate-90 transition-transform" />
+                            </button>
                         </div>
                     </div>
 
